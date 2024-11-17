@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nfs-ganesha-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nfs-ganesha
+  template:
+    metadata:
+      labels:
+        app: nfs-ganesha
+    spec:
+      containers:
+      - name: nfs-ganesha
+        image: hectorm/nfs-ganesha:latest
+        ports:
+        - containerPort: 2049
+        volumeMounts:
+        - mountPath: /export
+          name: nfs-ganesha-storage
+        securityContext:
+          privileged: true
+      volumes:
+      - name: nfs-ganesha-storage
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nfs-server
+spec:
+  selector:
+    app: nfs-ganesha
+  ports:
+  - protocol: TCP
+    port: 2049
+    targetPort: 2049
+  type: ClusterIP
